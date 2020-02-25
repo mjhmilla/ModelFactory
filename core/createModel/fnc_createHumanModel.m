@@ -2,7 +2,8 @@
 % Licensed under the zlib license. See LICENSE for more details.
 
 function humanModel = fnc_createHumanModel (humanModelDescription, ...
-    scalingAlgorithm, humanAnthropometry, addMarkers, customMarkerList)
+    scalingAlgorithm, humanAnthropometry, addMarkers,...
+    functionHandleAddMarkersToSegment)
 
 % Read dictionary items
 dict_definitions;
@@ -87,20 +88,14 @@ for segmentID = 1:nSegments_Human
     end
     
     % Add marker information
-    if addMarkers == 1 || addMarkers == '1' || ~isempty(customMarkerList)
-		if segmentID == 1
-			if isempty(customMarkerList) 
-				disp (' - Adding markers to segments.');
-                disp ('  -- Using default marker configuration.');
-			else
-				disp (' - Adding markers to segments.');
-                disp (['  -- Using custom marker configuration.']);
-			end
-		end
+    if addMarkers == 1 || addMarkers == '1'
+      if segmentID == 1
+          disp (' - Adding markers to segments.');
+                  disp ('  -- Using default marker configuration.');
+      end
         [humanModel{segmentID}.marker_names, ...
             humanModel{segmentID}.marker_values] = ...
-            fnc_addMarkersToSegments (humanModel, ...
-            modelSegment_typeName, humanAnthropometry, segmentID,...
-            customMarkerList);
+            functionHandleAddMarkersToSegment (humanModel, ...
+            modelSegment_typeName, humanAnthropometry, segmentID);
     end
 end
