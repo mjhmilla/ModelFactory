@@ -4,6 +4,10 @@
 % Heidelberg University, Germany
 %
 % Licensed under the zlib license. See LICENSE for more details.
+%
+% @date March 3 2020
+% @author M.Millard
+% @note Modified from the original version
 
 %% General Description
 % The ModelFactory toolkit is a set of scripts in Matlab(R)/Octave that 
@@ -20,11 +24,15 @@
 % based toolbox to create human body models" submission to Source Code for 
 % Biology & Medicine
 
-clear; clc;
+%clear; clc;
+
+function success = createModel(EnvironmentSetupFile, flag_plot,flag_verbose)
+
+success = 0;
 
 %% Uncomment any of the lines below to create some sample models
 % EnvironmentSetupFile = ['data/samples/use-case-walking/data/human.env'];
- EnvironmentSetupFile = ['data/samples/EnvironmentSetup_3DHumanDefault_01.env'];
+% EnvironmentSetupFile = ['data/samples/EnvironmentSetup_3DHumanDefault_01.env'];
 % EnvironmentSetupFile = ['data/samples/EnvironmentSetup_3DChildJensen.env'];
 % EnvironmentSetupFile = ['data/samples/EnvironmentSetup_3DHumanCustom.env'];
 % EnvironmentSetupFile = ['data/samples/EnvironmentSetup_3DHumanCustomPartial.env'];
@@ -35,10 +43,13 @@ clear; clc;
 %% Set path to Modelfactory's folders
 addpath(genpath('core'));
 addpath(genpath('customSetups'));
-disp (['Processing environment setup file :: ', EnvironmentSetupFile]);
+if(flag_verbose==1)
+    disp (['Processing environment setup file :: ', EnvironmentSetupFile]);
+end
 basePathIdx = strfind (EnvironmentSetupFile,'/');
 basePath = EnvironmentSetupFile(1:basePathIdx(end));
-EnvironmentSetup = fnc_readEnvironmentSetupFile (EnvironmentSetupFile);
+EnvironmentSetup = fnc_readEnvironmentSetupFile (...
+                    EnvironmentSetupFile,flag_verbose);
 
 %Handle to the function that defines the markerset. Currently there are
 %two different markersets to choose from:
@@ -90,7 +101,8 @@ end
         scalingAlgorithm,...
         humanAnthropometry,...
         EnvironmentSetup.AddMarkers,...
-        fncH_addHumanMarkerSet);
+        fncH_addHumanMarkerSet,...
+        flag_verbose);
 
 %% Setup all objects (if any)
 objects = [];
@@ -151,7 +163,9 @@ if ~isempty(EnvironmentSetup.humanModel_Save)
     fnc_writeLUAFile (humanModel, ...
         [basePath,EnvironmentSetup.humanModel_Save], ...
         metadata);
-    disp (['Wrote human LUA file :: ', EnvironmentSetup.humanModel_Save]);
+    if(flag_verbose==1)
+        disp (['Wrote human LUA file :: ', EnvironmentSetup.humanModel_Save]);
+    end
 end
 for objID = 1:EnvironmentSetup.nObjects
     if ~isempty(EnvironmentSetup.objects(objID).modelSave)
@@ -159,8 +173,10 @@ for objID = 1:EnvironmentSetup.nObjects
         fnc_writeLUAFile (objects(objID).objectModel, ...
             [basePath, EnvironmentSetup.objects(objID).modelSave], ...
             metadata);
-        disp (['Wrote object LUA file :: ', ...
-            EnvironmentSetup.objects(objID).modelSave]);
+        if(flag_verbose==1)
+            disp (['Wrote object LUA file :: ', ...
+                EnvironmentSetup.objects(objID).modelSave]);
+        end
     end
 end
 if ~isempty(EnvironmentSetup.combinedModel_Save)
@@ -178,13 +194,16 @@ end
 % 8) markerSize, 9)rootDisplacement
 % Note that alpha transparency values are not yet allowed in octave
 
-clf; hold on;
-fnc_plotting_plotModel (humanModel, 0, 1, 0, 0, 0, 1.0, 15, [0 0 0]);
-for objID = 1:EnvironmentSetup.nObjects
-    fnc_plotting_plotModel (objects(objID).objectModel, 0, 1, 0, 1, 0, 1.0, 10, [objID*0.5 objID*0.5 0.0]);
+if(flag_plot==1)
+  clf; hold on;
+  fnc_plotting_plotModel (humanModel, 0, 1, 0, 0, 0, 1.0, 15, [0 0 0]);
+  for objID = 1:EnvironmentSetup.nObjects
+      fnc_plotting_plotModel (objects(objID).objectModel, 0, 1, 0, 1, 0, 1.0, 10, [objID*0.5 objID*0.5 0.0]);
+  end
+  light('Position',[2.0,-2.0,2.0],'Style','infinite');
+  view([30 30]);
+  axis equal; grid off;
+  axis off;
+  xlabel('X'); ylabel('Y'); zlabel('Z');
 end
-light('Position',[2.0,-2.0,2.0],'Style','infinite');
-view([30 30]);
-axis equal; grid off;
-axis off;
-xlabel('X'); ylabel('Y'); zlabel('Z');
+success = 1;

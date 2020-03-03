@@ -1,7 +1,8 @@
 %% ModelFactory
 % Licensed under the zlib license. See LICENSE for more details.
 
-function EnvironmentSetup = fnc_readEnvironmentSetupFile (EnvironmentSetupFile)
+function EnvironmentSetup = fnc_readEnvironmentSetupFile (...
+                        EnvironmentSetupFile,flag_verbose)
 
 fid = fopen(EnvironmentSetupFile);
 fileTxt = textscan(fid, '%s','CommentStyle','#');
@@ -70,10 +71,11 @@ for i = 1:length(fileCellArray)
        obj = obj + 1;
    end
 end
-disp (['Found ', int2str(EnvironmentSetup.nObjects), ...
-    ' objects in environment file']);
+if(flag_verbose==1)
+  disp (['Found ', int2str(EnvironmentSetup.nObjects), ...
+      ' objects in environment file']);
+  end
 end
-
 function fieldValue = fnc_findFieldValue (str_to_search, searchArray, isMandatory)
 if nargin < 3
     isMandatory = 0;
